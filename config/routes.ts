@@ -89,4 +89,9 @@
 	{
 		component: './exception/404',
 	},
+	{
+		path: '/todo-list',
+		name: 'TodoList',
+		component: './TodoList',
+	},
 ];

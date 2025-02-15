@@ -1,7 +1,8 @@
-import type { IColumn } from '@/components/Table/typing';
-import { Button, Form, Input, Modal, Table } from 'antd';
+import { Button, Modal, Table } from 'antd';
+import type { ColumnType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import { useModel } from 'umi';
+import UserForm from './UserForm';
 
 const RandomUser = () => {
 	const { data, getDataUser } = useModel('randomuser');
@@ -13,7 +14,17 @@ const RandomUser = () => {
 		getDataUser();
 	}, []);
 
-	const columns: IColumn<RandomUser.Record>[] = [
+	interface RandomUserRecord {
+		address: string;
+		balance: string;
+		first: string;
+		last: string;
+		email: string;
+		created: string;
+	}
+	interface RandomUserColumnProps extends ColumnType<RandomUserRecord> {}
+
+	const columns: RandomUserColumnProps[] = [
 		{
 			title: 'Address',
 			dataIndex: 'address',
@@ -30,7 +41,7 @@ const RandomUser = () => {
 			title: 'Action',
 			width: 200,
 			align: 'center',
-			render: (record) => {
+			render: (record: RandomUserRecord) => {
 				return (
 					<div>
 						<Button
@@ -45,8 +56,8 @@ const RandomUser = () => {
 						<Button
 							style={{ marginLeft: 10 }}
 							onClick={() => {
-								const dataLocal: any = JSON.parse(localStorage.getItem('data') as any);
-								const newData = dataLocal.filter((item: any) => item.address !== record.address);
+								const dataLocal: RandomUserRecord[] = JSON.parse(localStorage.getItem('data') as string);
+								const newData = dataLocal.filter((item) => item.address !== record.address);
 								localStorage.setItem('data', JSON.stringify(newData));
 								getDataUser();
 							}}
@@ -82,40 +93,7 @@ const RandomUser = () => {
 					setVisible(false);
 				}}
 			>
-				<Form
-					onFinish={(values) => {
-						const index = data.findIndex((item: any) => item.address === row?.address);
-						const dataTemp: RandomUser.Record[] = [...data];
-						dataTemp.splice(index, 1, values);
-						const dataLocal = isEdit ? dataTemp : [values, ...data];
-						localStorage.setItem('data', JSON.stringify(dataLocal));
-						setVisible(false);
-						getDataUser();
-					}}
-				>
-					<Form.Item
-						initialValue={row?.address}
-						label='address'
-						name='address'
-						rules={[{ required: true, message: 'Please input your address!' }]}
-					>
-						<Input />
-					</Form.Item>
-					<Form.Item
-						initialValue={row?.balance}
-						label='balance'
-						name='balance'
-						rules={[{ required: true, message: 'Please input your balance!' }]}
-					>
-						<Input />
-					</Form.Item>
-					<div className='form-footer'>
-						<Button htmlType='submit' type='primary'>
-							{isEdit ? 'Save' : 'Insert'}
-						</Button>
-						<Button onClick={() => setVisible(false)}>Cancel</Button>
-					</div>
-				</Form>
+				<UserForm row={row} isEdit={isEdit} data={data} setVisible={setVisible} getDataUser={getDataUser} />
 			</Modal>
 		</div>
 	);
